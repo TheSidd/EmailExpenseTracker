@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <title>Data parsed from emails</title>
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  </head>
+  <body style="padding:3em;">
+    <h2>Parsed data from Messages</h2>
+    <table style="width:420px">
+    <thead>
+    <tr>
+    <th>Date</th><th>Merchant</th><th>Card</th><th>Amount</th>
+    </tr>
+    </thead>
+    <tbody>
+    <? for(var m=0;m<records.length;m++){ ?>
+    <tr>
+    <td><?= records[m].date ?></td>
+    <td><?= records[m].merchant ?></td>
+    <td><?= records[m].card ?></td>
+    <td><?= records[m].currency ?></td>
+    <td><?= records[m].amount ?></td>
+    </tr>
+    <? }?>
+    </tbody>
+    </table>
+    <div class="block">
+    <button id="save_to_sheet" class="blue">Save Data to Sheet</button>
+    <span id="saving_label" style="visibility:hidden">Saving ...</span>
+    </div>
+    <script>
+    document.querySelector("#save_to_sheet").addEventListener("click", 
+    function(e)
+    {
+       var self=this;
+       self.style.visibility = 'hidden';
+       var saving_label = document.querySelector("#saving_label");
+       saving_label.style.visibility = 'visible';
+       google.script.run.withSuccessHandler(function()
+       {
+         alert("Saved expense data");
+         self.style.visibility = 'visible';
+         saving_label.style.visibility = 'hidden';
+         
+       }).withFailureHandler(function()
+       {
+         alert("an error occured while saving");
+         self.style.visibility = 'visible';
+         saving_label.style.visibility = 'hidden';
+       }).processTransactionEmails();
+       
+    });
+    </script>
+  </body>
+</html>
+
