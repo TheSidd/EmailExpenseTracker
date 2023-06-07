@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <title>Message Display Test</title>
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  </head>
+  <body style="padding:3em;">
+  <h1>Messages</h1>
+    <ul>
+    <? for(var m=0;m<messages.length;m++){ ?>
+    <li><?= messages[m].getSubject() ?></li>
+    <p><?= messages[m].getPlainBody() ?></p>
+    <? } ?>
+    </ul>
+  </body>
+</html>
