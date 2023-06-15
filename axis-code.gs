@@ -24,7 +24,7 @@ function parseMessageData(messages)
   {
     var text = messages[m].getPlainBody();
 
-    var matches = text.match(/Card no.\s(XX\d+)\sfor\s([A-Z]{3})\s(\d+(?:\.\d+)?)\sat\s(.+?)\son\s*(\d+-\d+-\d+\s\d+:\d+:\d+)/);
+    var matches = text.match(/Card no.\s(XX\d+)\sfor\s([A-Z]{3})\s(\d+(?:\.\d+)?)\sat\s([\s\S]+?)\son\s*(\d{2}-\d+-\d+\s\d+:\d+:\d+)/);
     
     if(!matches || matches.length < 6)
     {
@@ -35,7 +35,7 @@ function parseMessageData(messages)
     rec.currency = matches[2];
     rec.card = matches[1];
     rec.date= matches[5];
-    rec.merchant = matches[4];
+    rec.merchant = matches[4].replace(/\s+/g, ' ').trim();
     rec.amount = matches[3];
     
     records.push(rec);
