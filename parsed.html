@@ -7,15 +7,16 @@
   </head>
   <body style="padding:3em;">
     <h2>Parsed data from Messages</h2>
-    <table style="width:420px">
+    <table style="width:720px">
     <thead>
     <tr>
-    <th>Date</th><th>Merchant</th><th>Card</th><th>Amount</th>
+    <th>Account</th><th>Date</th><th>Merchant</th><th>Card</th><th>Amount</th>
     </tr>
     </thead>
     <tbody>
     <? for(var m=0;m<records.length;m++){ ?>
     <tr>
+    <td><?= records[m].account ?></td>
     <td><?= records[m].date ?></td>
     <td><?= records[m].merchant ?></td>
     <td><?= records[m].card ?></td>
@@ -54,4 +55,3 @@
     </script>
   </body>
 </html>
-

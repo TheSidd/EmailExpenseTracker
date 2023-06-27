@@ -1,6 +1,22 @@
-function getRelevantMessages()
+//REPLACE WITH YOUR GOOGLE SHEET URL
+let your_spreadsheet_url="https://docs.google.com/spreadsheets/d/xxxxxxxxxxxxxx/edit?usp=sharing";
+
+let axis_email_search="newer_than:1d AND in:inbox AND from:axisbank.com AND subject:Transaction alert AND -label:axis_processed";
+let axis_regex= new RegExp(/Card no.\s(XX\d+)\sfor\s([A-Z]{3})\s(\d+(?:\.\d+)?)\s*at\s([\s\S]+?)\son\s*(\d{2}-\d+-\d+\s\d+:\d+:\d+)/);
+let axis_sheet_name="Axis";
+let axis_account_name="Axis";
+let axis_gmail_label="axis_processed";
+
+let hdfc_email_search="newer_than:1d AND from:(alerts@hdfcbank.net) subject:(Alert : Update on your HDFC Bank Credit Card) AND -label:hdfc_processed";
+let hdfc_regex= new RegExp(/HDFC Bank Credit Card ending.([0-9]{4}).for.([A-Za-z]{2}).(\d+(?:\.\d+)?).at.([\s\S]+?)\son\s*(\d{2}-\d+-\d+\s\d+:\d+:\d+)/);
+let hdfc_sheet_name="HDFC";
+let hdfc_account_name="HDFC";
+let hdfc_gmail_label="hdfc_processed";
+
+
+function getRelevantMessages(email_search)
 {
-  var threads = GmailApp.search("newer_than:1d AND in:inbox AND from:axisbank.com AND subject:Transaction alert AND -label:axis_processed",0,100);
+  var threads = GmailApp.search(email_search,0,100);
   var arrToConvert=[];
   for(var i = threads.length - 1; i >=0; i--) {
     arrToConvert.push(threads[i].getMessages());   
@@ -12,7 +28,7 @@ function getRelevantMessages()
   return messages;
 }
 
-function parseMessageData(messages)
+function parseMessageData(messages,regex_pattern,account_name)
 {
   var records=[];
   if(!messages)
@@ -23,8 +39,8 @@ function parseMessageData(messages)
   for(var m=0;m<messages.length;m++)
   {
     var text = messages[m].getPlainBody();
-
-    var matches = text.match(/Card no.\s(XX\d+)\sfor\s([A-Z]{3})\s(\d+(?:\.\d+)?)\s*at\s([\s\S]+?)\son\s*(\d{2}-\d+-\d+\s\d+:\d+:\d+)/);
+    var matches = text.replace(/(\r\n|\n|\r)/gm, "");
+    matches = matches.match(regex_pattern);
     
     if(!matches || matches.length < 6)
     {
@@ -32,36 +48,39 @@ function parseMessageData(messages)
       continue;
     }
     var rec = {};
+    rec.account = account_name;
     rec.currency = matches[2];
     rec.card = matches[1];
     rec.date= matches[5];
     rec.merchant = matches[4].replace(/\s+/g, ' ').trim();
     rec.amount = matches[3];
-    
+
     records.push(rec);
   }
-  return records;
+    return records;
+
 }
 
-function getMessagesDisplay()
+function getMessagesDisplay(email_search)
 {
   var templ = HtmlService.createTemplateFromFile('messages');
-  templ.messages = getRelevantMessages();
+  templ.messages = getRelevantMessages(email_search);
   return templ.evaluate();  
 }
 
 function getParsedDataDisplay()
 {
   var templ = HtmlService.createTemplateFromFile('parsed');
-  templ.records = parseMessageData(getRelevantMessages());
+  var axis_records=parseMessageData(getRelevantMessages(axis_email_search),axis_regex,axis_account_name);
+  var hdfc_records=parseMessageData(getRelevantMessages(hdfc_email_search),hdfc_regex,hdfc_account_name);
+  templ.records=axis_records.concat(hdfc_records);
   return templ.evaluate();
 }
 
-function saveDataToSheet(records)
+function saveDataToSheet(records,sheet_name)
 {
-//REPLACE WITH YOUR GOOGLE SHEET URL
-  var spreadsheet = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/zTDJo5a6QK/edit#gid=1439879152 - REPLACE BETWEEN QUOTES");
-  var sheet = spreadsheet.getSheetByName("Axis");
+  var spreadsheet = SpreadsheetApp.openByUrl(your_spreadsheet_url);
+  var sheet = spreadsheet.getSheetByName(sheet_name);
   for(var r=0;r<records.length;r++)
   {
     sheet.appendRow([records[r].date,records[r].card, records[r].merchant, records[r].amount, records[r].currency] );
@@ -71,17 +90,22 @@ function saveDataToSheet(records)
 
 function processTransactionEmails()
 {
-  var messages = getRelevantMessages();
-  var records = parseMessageData(messages);
-  saveDataToSheet(records);
-  labelMessagesAsDone(messages);
+  var axis_messages = getRelevantMessages(axis_email_search);
+  var axis_records = parseMessageData(axis_messages,axis_regex,axis_account_name);
+  saveDataToSheet(axis_records,axis_sheet_name);
+  labelMessagesAsDone(axis_messages,axis_gmail_label);
+
+  var hdfc_messages = getRelevantMessages(hdfc_email_search);
+  var hdfc_records = parseMessageData(hdfc_messages,hdfc_regex,hdfc_account_name);
+  saveDataToSheet(hdfc_records,hdfc_sheet_name);
+  labelMessagesAsDone(hdfc_messages,hdfc_gmail_label);
+
   return true;
 }
 
-function labelMessagesAsDone(messages)
+function labelMessagesAsDone(messages,email_label)
 {
-  var label = 'axis_processed';
-  var label_obj = GmailApp.getUserLabelByName(label);
+  var label_obj = GmailApp.getUserLabelByName(email_label);
   if(!label_obj)
   {
     label_obj = GmailApp.createLabel(label);
