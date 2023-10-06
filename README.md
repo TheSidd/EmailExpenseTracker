@@ -1,5 +1,7 @@
 # Track your Expenses from bank email alerts
 
+**Update**: Added excel to track Axis Magnus latest T&C 
+
 **TLDR –**
 * Periodically all credit card transactions are automatically fetched from your email
 * Transactions are added to google sheet
