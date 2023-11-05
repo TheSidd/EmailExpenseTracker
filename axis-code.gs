@@ -81,13 +81,15 @@ function saveDataToSheet(records) {
   for (var r = 0; r < records.length; r++) {
     // If the email checksum is not already in the sheet, append the row
     if (existingChecksums.indexOf(records[r].emailHash) === -1) {
+      let row_index = lastRow + r + 1;
+      let conversion_formula = `=IF(E${row_index}="INR",D${row_index},D${row_index}*GOOGLEFINANCE("CURRENCY:"&E${row_index}&"/INR"))`;
       sheet.appendRow([
         records[r].date,
         records[r].card,
         records[r].merchant,
-        records[r].amount,
-        records[r].currency,
-        "",
+        records[r].amount, // D
+        records[r].currency, // E
+        conversion_formula,
         records[r].emailHash, // Add the email checksum to the row
       ]);
     }
