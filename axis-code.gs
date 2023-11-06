@@ -38,11 +38,7 @@ function parseMessageData(messages)
     rec.date= matches[5];
     rec.merchant = matches[4];
     rec.amount = matches[3];
-    rec.emailHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_1, text)
-        .map(function (byte) {
-          return (byte & 0xFF).toString(16);
-        })
-        .join('');
+    rec.emailHash = messages[m].getId();;
 
     
     records.push(rec);
