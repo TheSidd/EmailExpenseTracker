@@ -25,7 +25,7 @@ function parseMessageData(messages)
   {
     var text = messages[m].getPlainBody();
 
-    var matches = text.match(/Card no.\s(XX\d+)\sfor\s([A-Z]{3})\s(\d+(?:\.\d+)?)\sat[\s\n]+(.+?)\son\s*(\d+-\d+-\d+\s\d+:\d+:\d+)/);
+    var matches = text.match(/Card no.[\s\n]+(XX\d+)[\s\n]+for[\s\n]+([A-Z]{3})[\s\n]+(\d+(?:\.\d+)?)[\s\n]+at[\s\n]+(.+?)\son[\s\n]*(\d+-\d+-\d+\s\d+:\d+:\d+)/);
     
     if(!matches || matches.length < 6)
     {
